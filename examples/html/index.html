@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Vue.js commits example</title>
+    <style>
+      #demo {
+        font-family: 'Helvetica', Arial, sans-serif;
+      }
+      a {
+        text-decoration: none;
+        color: #f66;
+      }
+      li {
+        line-height: 1.5em;
+        margin-bottom: 20px;
+      }
+      .author, .date {
+        font-weight: bold;
+      }
+    </style>
+    <script src="../../dist/vue.js"></script>
+  </head>
+  <body>
+    <div id="demo">
+      <span v-html="commits"></span>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
