@@ -39,9 +39,8 @@ export default function Watcher(vm, expOrFn, cb, options) {
     this.getter = res.get
     this.setter = res.set
   }
-  this.value = this.lazy
-    ? undefined
-    : this.get()
+  // 这里是 watcher 收集依赖的入口
+  this.value = this.get()
 }
 
 Watcher.prototype.get = function () {

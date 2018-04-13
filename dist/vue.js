@@ -551,9 +551,6 @@ var vFor = {
     // create iteration scope
     var parentScope = this._scope || this.vm;
     var scope = Object.create(parentScope);
-    // ref holder for the scope
-    // scope.$refs = Object.create(parentScope.$refs)
-    // scope.$els = Object.create(parentScope.$els)
     // make sure point $parent to parent scope
     scope.$parent = parentScope;
     // for two-way binding on alias
@@ -932,7 +929,8 @@ function Watcher(vm, expOrFn, cb, options) {
     this.getter = res.get;
     this.setter = res.set;
   }
-  this.value = this.lazy ? undefined : this.get();
+  // 这里是 watcher 收集依赖的入口
+  this.value = this.get();
 }
 
 Watcher.prototype.get = function () {
@@ -1030,9 +1028,7 @@ Directive.prototype._bind = function () {
     {
       scope: this._scope
     });
-    // v-model with inital inline value need to sync back to
-    // model instead of update to DOM on init. They would
-    // set the afterBind hook to indicate that.
+
     // if (this.afterBind) {
     //   this.afterBind()
     // } else if (this.update) {
@@ -1093,7 +1089,6 @@ Vue.prototype._init = function (options) {
  */
 Vue.prototype._initData = function () {
   var dataFn = this.$options.data;
-  // 官方文档建议使用 function 的形式
   var data = this._data = isFunction(dataFn) ? dataFn() : dataFn;
   var keys = Object.keys(data);
   var i, key;
