@@ -2,7 +2,7 @@ import compile from './compile'
 import Directive from './directive'
 import { stringToFragment, nodeToFragment } from './parsers/template'
 import { observe } from './observer'
-import { replace, isFunction } from './utils'
+import { replace, isFunction, bind } from './utils'
 
 function Vue(options) {
   this._init(options)
@@ -15,6 +15,7 @@ Vue.prototype._init = function (options) {
   this._watchers = []
 
   this._initData()
+  this._initMethods()
 
   if (options.el) {
     // 程序编译的入口
@@ -23,13 +24,24 @@ Vue.prototype._init = function (options) {
 }
 
 /**
+ * 初始化 methods
+ */
+Vue.prototype._initMethods = function () {
+  var methods = this.$options.methods
+  if (methods) {
+    for (var key in methods) {
+      this[key] = bind(methods[key], this)
+    }
+  }
+}
+
+/**
  * 初始化 data
  */
 Vue.prototype._initData = function () {
   var dataFn = this.$options.data
-  var data = this._data = isFunction(dataFn)
-    ? dataFn()
-    : dataFn
+  var data = this._data = dataFn ?
+    isFunction(dataFn) ? dataFn() : dataFn : {}
   var keys = Object.keys(data)
   var i, key
   i = keys.length

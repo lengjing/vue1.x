@@ -16,6 +16,7 @@ export default function Directive(descriptor, vm, el, host, scope, frag) {
   this.descriptor = descriptor
   this.name = descriptor.name
   this.expression = descriptor.expression
+  this.arg = descriptor.arg
   // private
   // this._locked = false
   // this._bound = false

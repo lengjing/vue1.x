@@ -232,7 +232,8 @@ function compileTextNode(node) {
 function compileDirectives(attrs) {
   var i = attrs.length
   var dirs = []
-  var attr, name, value, rawName, rawValue, dirName, dirDef, matched
+  // arg: 指令参数 eg: 有个指令是 v-on:click 那么 arg 为 click
+  var attr, name, value, rawName, rawValue, dirName, dirDef, matched, arg
   while (i--) {
     attr = attrs[i]
     name = rawName = attr.name
@@ -241,6 +242,7 @@ function compileDirectives(attrs) {
     //
     if ((matched = name.match(dirAttrRE))) {
       dirName = matched[1]
+      arg = matched[2]
 
       // 应该要在 vm 实例中查找的，因为有可能存在自定义指令的情况
       // 所以这里的做法是欠妥的
@@ -264,7 +266,8 @@ function compileDirectives(attrs) {
       attr: rawName,
       raw: rawValue,
       def: def,
-      expression: parsed && parsed.expression
+      expression: parsed && parsed.expression,
+      arg: arg
     })
   }
 
