@@ -217,6 +217,13 @@ function isFunction(func) {
   return typeof func === 'function';
 }
 
+function bind(fn, ctx) {
+  return function (a) {
+    var l = arguments.length;
+    return l ? l > 1 ? fn.apply(ctx, arguments) : fn.call(ctx, a) : fn.call(ctx);
+  };
+}
+
 var text = {
   bind: function bind() {
     this.attr = this.el.nodeType === 3 ? 'data' : 'textContent';
@@ -584,10 +591,34 @@ var vFor = {
   }
 };
 
+function on(el, event, handler, useCapture) {
+  el.addEventListener(event, handler, useCapture);
+}
+
+function off(el, handler, callback) {
+  el.removeEventListener(handler, callback);
+}
+
+var on$1 = {
+  bind: function bind() {},
+
+  update: function update(value) {
+    this.handler = value;
+    this.reset();
+
+    on(this.el, this.arg, this.handler);
+  },
+
+  reset: function reset() {
+    off(this.el, this.handler);
+  }
+};
+
 var publicDirectives = {
   text: text,
   html: html,
-  'for': vFor
+  'for': vFor,
+  on: on$1
 };
 
 var dirAttrRE = /^v-([^:]+)(?:$|:(.*)$)/;
@@ -811,7 +842,8 @@ function compileTextNode(node) {
 function compileDirectives(attrs) {
   var i = attrs.length;
   var dirs = [];
-  var attr, name, value, rawName, rawValue, dirName, dirDef, matched;
+  // arg: 指令参数 eg: 有个指令是 v-on:click 那么 arg 为 click
+  var attr, name, value, rawName, rawValue, dirName, dirDef, matched, arg;
   while (i--) {
     attr = attrs[i];
     name = rawName = attr.name;
@@ -820,6 +852,7 @@ function compileDirectives(attrs) {
     //
     if (matched = name.match(dirAttrRE)) {
       dirName = matched[1];
+      arg = matched[2];
 
       // 应该要在 vm 实例中查找的，因为有可能存在自定义指令的情况
       // 所以这里的做法是欠妥的
@@ -843,7 +876,8 @@ function compileDirectives(attrs) {
       attr: rawName,
       raw: rawValue,
       def: def,
-      expression: parsed && parsed.expression
+      expression: parsed && parsed.expression,
+      arg: arg
     });
   }
 
@@ -978,6 +1012,7 @@ function Directive(descriptor, vm, el, host, scope, frag) {
   this.descriptor = descriptor;
   this.name = descriptor.name;
   this.expression = descriptor.expression;
+  this.arg = descriptor.arg;
   // private
   // this._locked = false
   // this._bound = false
@@ -1073,6 +1108,7 @@ Vue.prototype._init = function (options) {
   this._watchers = [];
 
   this._initData();
+  this._initMethods();
 
   if (options.el) {
     // 程序编译的入口
@@ -1081,11 +1117,23 @@ Vue.prototype._init = function (options) {
 };
 
 /**
+ * 初始化 methods
+ */
+Vue.prototype._initMethods = function () {
+  var methods = this.$options.methods;
+  if (methods) {
+    for (var key in methods) {
+      this[key] = bind(methods[key], this);
+    }
+  }
+};
+
+/**
  * 初始化 data
  */
 Vue.prototype._initData = function () {
   var dataFn = this.$options.data;
-  var data = this._data = isFunction(dataFn) ? dataFn() : dataFn;
+  var data = this._data = dataFn ? isFunction(dataFn) ? dataFn() : dataFn : {};
   var keys = Object.keys(data);
   var i, key;
   i = keys.length;
