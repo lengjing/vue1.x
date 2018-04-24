@@ -614,11 +614,20 @@ var on$1 = {
   }
 };
 
+var vBind = {
+  bind: function bind() {},
+
+  update: function update(value) {
+    this.el.setAttribute(this.arg, value);
+  }
+};
+
 var publicDirectives = {
   text: text,
   html: html,
   'for': vFor,
-  on: on$1
+  on: on$1,
+  bind: vBind
 };
 
 var dirAttrRE = /^v-([^:]+)(?:$|:(.*)$)/;
